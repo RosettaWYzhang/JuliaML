@@ -20,7 +20,7 @@ w = param(randn(1,D))
 b = param([0.])
 
 # using CuArrays for GPU support
-w, b, x, y = cu.((w, b, x, y))
+# w, b, x, y = cu.((w, b, x, y))
 
 predict(x) = w*x .+ b
 meansquareloss(yhat, y) = sum((yhat - y).^2)/N
