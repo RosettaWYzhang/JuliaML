@@ -46,6 +46,9 @@ function update!(ps, eta = .1)
   end
 end
 
+# using CuArrays for GPU support
+# hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b x, y = cu.((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b, x, y))
+
 for i = 1:iterations
   back!(E(x, y))
   update!((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b))
