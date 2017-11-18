@@ -1,4 +1,9 @@
-#Julia simple neural net for Boston Housing Problem
+# Julia simple neural net for Boston Housing Problem
+# f(x) = c'h(x)
+# h(x) = σ(Ax + b)
+
+
+
 using Flux.Tracker
 
 cd(@__DIR__)
