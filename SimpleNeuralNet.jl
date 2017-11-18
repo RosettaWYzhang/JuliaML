@@ -3,6 +3,7 @@
 # h(x) = σ(Ax + b)
 workspace()
 using Flux.Tracker
+using CuArrays
 
 isfile("housing.data") ||
   download("https://raw.githubusercontent.com/MikeInnes/notebooks/master/housing.data",
@@ -47,7 +48,7 @@ function update!(ps, eta = .1)
 end
 
 # using CuArrays for GPU support
-# hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b x, y = cu.((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b, x, y))
+hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b, x, y = cu.((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b, x, y))
 
 for i = 1:iterations
   back!(E(x, y))
