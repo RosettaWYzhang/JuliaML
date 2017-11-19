@@ -3,8 +3,8 @@
 # h(x) = σ(Ax + b)
 workspace()
 using Flux, Flux.Tracker
-
 using CuArrays
+
 isfile("housing.data") ||
   download("https://raw.githubusercontent.com/MikeInnes/notebooks/master/housing.data",
            "housing.data")

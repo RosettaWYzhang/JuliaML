@@ -7,8 +7,7 @@ workspace()
 using Flux, Flux.Tracker
 using Flux: mse, throttle
 using Base.Iterators: repeated
-
-#using CuArrays
+using CuArrays
 
 isfile("housing.data") ||
   download("https://raw.githubusercontent.com/MikeInnes/notebooks/master/housing.data",
@@ -29,10 +28,10 @@ hidden_units = 20
 
 hiddenLayer = Dense(D, hidden_units, relu)
 outputLayer = Dense(hidden_units,1)
-model = Chain(hiddenLayer, outputLayer, softmax)
+model = Chain(hiddenLayer, outputLayer)
 
 #for GPU support
-#m = map(cu, m)
+m = map(cu, model)
 opt = SGD(params(model), learning_rate)
 E(x, y) = mse(model(x), y)
 evalcb = () -> @show(E(x, y))
