@@ -53,7 +53,7 @@ function update!(ps, eta = .1)
 end
 
 #GPU support
-x, y, W1, b1, W2, b2 = cu.(x, y, W1, b1, W2, b2)
+W1, b1, W2, b2, x, y = cu.((W1, b1, W2, b2, x, y))
 #hiddenLayer = mapleaves(cu, hiddenLayer)
 #outputLayer = mapleaves(cu, outputLayer)
 
