@@ -24,8 +24,8 @@ x = (x .- mean(x,2)) ./ std(x,2)
 N = 505 # number of training points
 D = 13 # dimension of each x vector
 hidden_units = 20
-learning_rate = 0.1
-iterations = 20000
+learning_rate = 0.2
+repetitions = 3
 
 hiddenLayer = Dense(D, hidden_units, σ)
 outputLayer = Dense(hidden_units,1)
@@ -33,12 +33,11 @@ model = Chain(hiddenLayer, outputLayer)
 
 #for GPU support
 #x,y = cu(x), cu(y)
-#m = mapleaves(cu, model)
+#model = mapleaves(cu, model)
 
-data = Iterators.repeated((x,y), iterations)
+data = Iterators.repeated((x,y), repetitions)
 opt = SGD(params(model), learning_rate)
 E(x, y) = mse(model(x), y)
 evalcb = () -> @show(E(x, y))
-
 
 Flux.train!(E, data, opt, cb = throttle(evalcb, 5))
