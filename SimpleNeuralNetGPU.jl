@@ -31,7 +31,7 @@ outputLayer = Dense(hidden_units,1)
 model = Chain(hiddenLayer, outputLayer)
 
 #for GPU support
-m = map(cu, model)
+m = mapleaves(cu, model)
 opt = SGD(params(model), learning_rate)
 E(x, y) = mse(model(x), y)
 evalcb = () -> @show(E(x, y))
