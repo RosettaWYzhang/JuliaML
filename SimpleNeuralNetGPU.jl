@@ -25,6 +25,7 @@ data = Iterators.repeated((x,y), 3)
 N = 505 # number of training points
 D = 13 # dimension of each x vector
 hidden_units = 20
+learning_rate = 0.1
 
 hiddenLayer = Dense(D, hidden_units, relu)
 outputLayer = Dense(hidden_units,1)
