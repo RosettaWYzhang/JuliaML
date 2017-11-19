@@ -20,18 +20,26 @@ x = (x .- mean(x,2)) ./ std(x,2)
 N = 505 # number of training points
 D = 13 # dimension of each x vector
 hidden_units = 20
-iterations = 5000
+iterations = 1000
 learning_rate = 0.1
 
 # function for creating linear layer
-function linear(in, out)
+#=function linear(in, out)
   W = param(randn(out, in))
   b = param(randn(out))
   x -> W * x .+ b
 end
 
 hiddenLayer = linear(D, hidden_units)
-outputLayer = linear(hidden_units,1)
+outputLayer = linear(hidden_units,1)=#
+
+W1 = param(randn(hidden_units, D))
+b1 = param([0.])
+W2 = param(randn(1, hidden_units))
+b2 = param([0.])
+hiddenLayer(x) = W1*x .+ b1
+outputLayer(x) = W2*x .+ b2
+predictPrice(x) = outputLayer(sigma(hiddenLayer(x)))
 
 sigma(x) = 1./(1.0+exp.(-x))
 meansquareloss(yhat, y) = sum((yhat - y).^2)/N
@@ -45,12 +53,14 @@ function update!(ps, eta = .1)
 end
 
 #GPU support
+#x,y,W1,b1,W2,b2 = cu.((x,y,W1,b1,W2,b2))
 #x,y = cu(x),cu(y)
 #hiddenLayer = mapleaves(cu, hiddenLayer)
 #outputLayer = mapleaves(cu, outputLayer)
 
 for i = 1:iterations
   back!(E(x, y))
-  update!((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b))
+  update!((W1, b1, W2, b2))
+  #update!((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b))
   @show E(x, y)
 end
