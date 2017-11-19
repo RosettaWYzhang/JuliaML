@@ -7,7 +7,7 @@ workspace()
 using Flux, Flux.Tracker
 using Flux: mse, throttle
 using Base.Iterators: repeated
-# using CuArrays
+using CuArrays
 
 isfile("housing.data") ||
   download("https://raw.githubusercontent.com/MikeInnes/notebooks/master/housing.data",
@@ -19,12 +19,12 @@ rawdata = readdlm("housing.data")'
 x = rawdata[1:13,:]
 y = rawdata[14:14,:]
 # Normalise the data
-x = (x .- mean(x,2)) ./ std(x,2)
+#x = (x .- mean(x,2)) ./ std(x,2)
 
 N = 505 # number of training points
 D = 13 # dimension of each x vector
-hidden_units = 20
-learning_rate = 0.2
+hidden_units = 40
+learning_rate = 0.1
 repetitions = 3
 
 hiddenLayer = Dense(D, hidden_units, σ)
@@ -32,8 +32,8 @@ outputLayer = Dense(hidden_units,1)
 model = Chain(hiddenLayer, outputLayer)
 
 #for GPU support
-#x,y = cu(x), cu(y)
-#model = mapleaves(cu, model)
+x,y = cu(x), cu(y)
+model = mapleaves(cu, model)
 
 data = Iterators.repeated((x,y), repetitions)
 opt = SGD(params(model), learning_rate)
@@ -41,3 +41,4 @@ E(x, y) = mse(model(x), y)
 evalcb = () -> @show(E(x, y))
 
 Flux.train!(E, data, opt, cb = throttle(evalcb, 5))
+
