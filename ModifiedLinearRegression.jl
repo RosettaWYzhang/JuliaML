@@ -1,4 +1,5 @@
 using Flux.Tracker
+using CuArrays
 
 N=10 # number of training points
 D=3 # dimension of each x vector
