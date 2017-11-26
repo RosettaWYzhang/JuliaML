@@ -43,7 +43,7 @@ predictPrice(x) = outputLayer(sigma(hiddenLayer(x)))
 
 sigma(x) = 1./(1.0+exp.(-x))
 meansquareloss(yhat, y) = sum((yhat - y).^2)/N
-E(x, y) = meansquareloss(predictPrice(x), y)
+E() = meansquareloss(predictPrice(x), y)
 predictPrice(x) = outputLayer(sigma(hiddenLayer(x)))
 function update!(ps, eta = .1)
   for pars in ps
@@ -59,8 +59,9 @@ end
 #outputLayer = mapleaves(cu, outputLayer)
 
 for i = 1:iterations
-  back!(E(x, y))
+  back!(E())
   update!((W1, b1, W2, b2))
   #update!((hiddenLayer.W, hiddenLayer.b, outputLayer.W, outputLayer.b))
-  @show E(x, y)
+
+  @show E()
 end
