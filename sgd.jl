@@ -5,14 +5,14 @@
 using Flux.Tracker
 using Plots
 
-N=5000 # number of training points
+N=1000 # number of training points
 D=3 # dimension of each x vector
 batchSize = 50
 batchNum = convert(Int, N/batchSize)
-iterations = 20
-η = 2.0
+iterations = 10
+η = 0.5
 k = 0.1
-λ = 0.1 #for momentum
+λ = 0.9 #for momentum
 Vdw = 0
 Vdb = 0
 
@@ -51,11 +51,11 @@ end
 # Minibatch gradient descent
 function update!(w, b, i, Vdw = 0, Vdb = 0, eta = η)
     eta = eta/(1+i*k) # learning rate annealing
-    w.data .-= w.grad .* eta * (1-λ) + Vdw * λ
-    Vdw = w.grad
+    Vdw = w.grad * (1-λ) + Vdw * λ
+    Vdb = b.grad * (1-λ) + Vdb * λ
+    w.data .-= Vdw .* eta
+    b.data .-= Vdb .* eta
     w.grad .= 0
-    b.data .-= b.grad .* eta * (1-λ) + Vdb * λ
-    Vdb = b.grad
     b.grad .= 0;
     return Vdw, Vdb
 end
