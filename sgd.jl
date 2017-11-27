@@ -14,7 +14,6 @@ k = 0.15
 Vdw = 0
 Vdb = 0
 
-
 # fake dataset
 x=randn(D,N)
 w_david=randn(1,D)
@@ -22,11 +21,11 @@ b_david=randn()
 # assume we try to predict a scalar output
 y=zeros(1,N)
 for n=1:N
-    y[n] = sum(w_david * x .+ b_david)
+    y[n] = sum(w_david * x[:,n] .+ b_david)
 end
 
 #visualise the dataset
-plotlyjs() # Choose the Plotly.jl backend for web interactivity
+plotly() # Choose the Plotly.jl backend for web interactivity
 plot(x,y,seriestype=:scatter,title="dataset")
 
 
