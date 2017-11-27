@@ -1,18 +1,21 @@
 # use mini batch to perform gradient descent
-# TODO: find a proper constant k for annealing
-# TODO: implement momentum
+# TODO: Debug momentum
+# TODO: Viasualize gradient descent
 
 using Flux.Tracker
-#using Plots
+using Plots
 
-N=1000 # number of training points
+N=5000 # number of training points
 D=3 # dimension of each x vector
-batchSize = 10
+batchSize = 50
 batchNum = convert(Int, N/batchSize)
-iterations = 100
-learning_rate = 0.1
-momentum = 0.5
-k = 1;
+iterations = 20
+η = 2.0
+k = 0.1
+λ = 0.1 #for momentum
+Vdw = 0
+Vdb = 0
+
 
 # fake dataset
 x=randn(D,N)
@@ -25,8 +28,8 @@ for n=1:N
 end
 
 #visualise the dataset
-#plotly() # Choose the Plotly.jl backend for web interactivity
-#plot(x,y,seriestype=:scatter,title="David's dataset")
+plotlyjs() # Choose the Plotly.jl backend for web interactivity
+plot(x,y,seriestype=:scatter,title="dataset")
 
 
 # David gives Wanyue only x,y and Wanyue has to try to find w_david and b_david
@@ -45,21 +48,23 @@ function E(bn)
 end
 
 
-# Gradient Descent with learning_rate annealing
-function update!(ps, i, eta = learning_rate, m = momentum)
-  for pars in ps
-    #eta_annealing = eta/(i+k)
-    eta_annealing = eta;
-    pars.data .-= pars.grad .* eta_annealing
-    pars.grad .= 0
-  end
+# Minibatch gradient descent
+function update!(w, b, i, Vdw = 0, Vdb = 0, eta = η)
+    eta = eta/(1+i*k) # learning rate annealing
+    w.data .-= w.grad .* eta * (1-λ) + Vdw * λ
+    Vdw = w.grad
+    w.grad .= 0
+    b.data .-= b.grad .* eta * (1-λ) + Vdb * λ
+    Vdb = b.grad
+    b.grad .= 0;
+    return Vdw, Vdb
 end
 
 
 for i = 1:iterations
   for bn = 1:batchNum
     back!(E(bn))
-    update!((w, b),i)
+    Vdw, Vdb = update!(w,b,i,Vdw,Vdb)
     @show E(bn)
   end
 end
