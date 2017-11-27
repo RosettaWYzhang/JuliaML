@@ -1,4 +1,5 @@
 # use mini batch to perform gradient descent
+# TODO: Viasualize error over iterations
 
 using Flux.Tracker
 using Plots
@@ -7,12 +8,12 @@ N=1000 # number of training points
 D=3 # dimension of each x vector
 batchSize = 50
 batchNum = convert(Int, N/batchSize)
-iterations = 20
-η = 1.5
-k = 0.15
-λ = 0.9 #for momentum
-Vdw = 0
-Vdb = 0
+iterations = 10
+#η = 0.5
+#k = 0.1
+#λ = 0.9 #for momentum
+#Vdw = 0
+#Vdb = 0
 
 
 # fake dataset
@@ -22,22 +23,19 @@ b_david=randn()
 # assume we try to predict a scalar output
 y=zeros(1,N)
 for n=1:N
-    y[n] = sum(w_david * x .+ b_david)
+    y[n] = sum(w_david * x[:,n] .+ b_david)
 end
 
 #visualise the dataset
-plotlyjs() # Choose the Plotly.jl backend for web interactivity
+plotly() # Choose the Plotly.jl backend for web interactivity
 plot(x,y,seriestype=:scatter,title="dataset")
 
 
-# David gives Wanyue only x,y and Wanyue has to try to find w_david and b_david
-# randomly initiate weight and bias
 w = param(randn(1,D))
 b = param(randn())
 
-predict(x) = w*x .+ b
-meansquareloss(yhat, y_batch) = sum((yhat - y_batch').^2)/N
-
+w = param(randn(1,D))
+b = param(randn())
 
 function E(bn)
   x_batch = x[:,(bn-1)*batchSize+1: bn*batchSize]
@@ -45,10 +43,8 @@ function E(bn)
   meansquareloss(predict(x_batch),y_batch)
 end
 
-
 # Minibatch gradient descent
-function update!(w, b, i, Vdw = 0, Vdb = 0, eta = η)
-    eta = eta/(1+i*k) # learning rate annealing
+function update!(w, b, i; k = 0.1, Vdw = 0, Vdb = 0, eta = 0.5, λ = 0.9)
     Vdw = w.grad * (1-λ) + Vdw * λ
     Vdb = b.grad * (1-λ) + Vdb * λ
     w.data .-= Vdw .* eta
@@ -58,11 +54,31 @@ function update!(w, b, i, Vdw = 0, Vdb = 0, eta = η)
     return Vdw, Vdb
 end
 
+x = 1:10; y = rand(10,2) # 2 columns means two lines
+plot(x,y,title="Two Lines",label=["Line 1" "Line 2"],lw=3)
+
 
 for i = 1:iterations
   for bn = 1:batchNum
+    # minibatch gradient descent
     back!(E(bn))
-    Vdw, Vdb = update!(w,b,i,Vdw,Vdb)
-    @show E(bn)
+    update!(w,b,i,k=0)
+    e1 = E(bn)
+    #push!(plt,i,E(bn))
+    #@show E(bn)
+    # with learning rate annealing
+    back!(E(bn))
+    update!(w,b,i)
+    e2 = E(bn)
+    #push!(plt,2,i,E(bn))
+    #@show E(bn)
+    # with learning rate annealing and momentum
+    back!(E(bn))
+    Vdw, Vdb = update!(w,b,i,Vdw=Vdw,Vdb=Vdb)
+    e3 = E(bn)
+    e = [x,y,z]
+    push!(plt,t,e3)
+    #@show E(bn)
+
   end
 end
