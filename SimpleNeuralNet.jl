@@ -37,6 +37,7 @@ W1 = param(randn(hidden_units, D))
 b1 = param([0.])
 W2 = param(randn(1, hidden_units))
 b2 = param([0.])
+
 hiddenLayer(x) = W1*x .+ b1
 outputLayer(x) = W2*x .+ b2
 predictPrice(x) = outputLayer(sigma(hiddenLayer(x)))
@@ -45,6 +46,7 @@ sigma(x) = 1./(1.0+exp.(-x))
 meansquareloss(yhat, y) = sum((yhat - y).^2)/N
 E(x, y) = meansquareloss(predictPrice(x), y)
 predictPrice(x) = outputLayer(sigma(hiddenLayer(x)))
+
 function update!(ps, eta = .1)
   for pars in ps
     pars.data .-= pars.grad .* eta
