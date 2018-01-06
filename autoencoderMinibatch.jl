@@ -1,16 +1,19 @@
+workspace()
 using Flux, MNIST
 using Flux.Tracker
-N = 60000
+using PyPlot
+N = 50
 D = 784
 H = 100
 x, y = traindata()
+x = x./255;
 x = (x .- mean(x,1)) ./ std(x,1)
-iterations = 50
+x = x[:,1:N]
+iterations = 1000
 epsilon = 0.01
-batchSize = 1000
+batchSize = 5
 batchNum = div(N, batchSize)
-iterations = 50
-learning_rate = 1
+learning_rate = 10
 eta = learning_rate
 momentum = 0.9
 
@@ -33,7 +36,7 @@ function nnfun(x)
    out = sigma(W2*leakyReLU(W1*x.+b1).+b2)
 end
 
-function E(bn,gamma,beta)
+function E(bn)
   x_batch = x[:,(bn-1)*batchSize+1: bn*batchSize]
   loss(x_batch)
 end
@@ -62,3 +65,6 @@ for i = 1:iterations
       @show E(bn)
    end
 end
+
+result = nnfun(x).data
+pcolormesh(reshape(result[:,1],28,28))
