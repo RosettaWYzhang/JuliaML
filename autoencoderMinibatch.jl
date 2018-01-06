@@ -5,7 +5,7 @@ using PyPlot
 N = 50
 D = 784
 H = 100
-x, y = traindata()
+(x, y) = traindata()
 x = x./255;
 x = (x .- mean(x,1)) ./ std(x,1)
 x = x[:,1:N]
