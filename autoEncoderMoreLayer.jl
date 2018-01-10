@@ -1,7 +1,7 @@
 # Structure 784 - 250 - 20 - 250 - 784
 using PyPlot
 using MNIST
-
+using Flux.Tracker
 trainX, trainY = traindata()
 
 function sigma(x)
@@ -75,4 +75,4 @@ for i = 1:20000
 end
 
 xrecon=decode(encode(xtrain)).data
-pcolormesh(reshape(xrecon[:,1],28,28))
+pcolormesh(reshape(xrecon[:,1],28,28),cmap="gray")

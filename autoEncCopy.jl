@@ -73,4 +73,4 @@ for i = 1:iterations
 end
 
 result = nnfun(xtrain).data
-pcolormesh(reshape(result[:,1],28,28))
+pcolormesh(reshape(result[:,1],28,28),cmap="gray")
