@@ -1,7 +1,6 @@
 using CuArrays
 using Flux.Tracker
 
-function test()
 
 N=10 # number of training points
 D=3 # dimension of each x vector
