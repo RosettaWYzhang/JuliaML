@@ -9,7 +9,7 @@
 # will ask a related question, read about probability
 # trick: log error function and sigmoid, a standard trick implemented in package
 
-# Structure 784 - 250 - 20 - 250 - 784
+
 
 using PyPlot
 using MNIST
@@ -24,16 +24,52 @@ function relu(x)
     return max(0,x)
 end
 
+function leakyrelu(x)
+    return max(alpha,x)
+end
 
 
-N=10 # number of training points
-D=784 # dimension of each x vector
-Q=250
-H=20
-
+N = 50 # number of training points
+D = 784 # dimension of each x vector
+H1 = 500
+H2 = 250
+H3 = 100
+H4 = 30
+numUnits = {D,H1,H2,H3,H4,H3,H2,H1,D}
+numLayers = 8
+alpha = 0.1 # constant for leaky relu
 xtrain=trainX[:,1:N]./255
 
+
 # randomly initiate weight and bias
+for i = 1:numLayers/2
+    en_weights[i] = param(randn(numsUnits[i], numsUnits[i+1])./sqrt(numsUnits[i+1]))
+    en_bias[i] = param(randn(numUnits[i], 1))./sqrt(numsUnits[i+1])
+    en_vW[i] = zeros(size(weights[i]))
+    en_vb[i] = zeros(size(bias[i]))
+end
+
+for i = numLayers/2+1:numLayers
+    de_weights[i] = param(randn(numsUnits[i], numsUnits[i+1])./sqrt(numsUnits[i+1]))
+    de_bias[i] = param(randn(numUnits[i], 1))./sqrt(numsUnits[i+1])
+    de_vW[i] = zeros(size(weights[i]))
+    de_vb[i] = zeros(size(bias[i]))
+end
+
+encode(x)= sigma(W2*sigma(W1*x .+ w1).+w2)
+decode(h)= sigma(U2*sigma(U1*h .+ u1).+u2)
+
+function model(x)
+    for i = 1:numberLayers-1
+        x = leakyrelu(weights[i]*x+bias[i])
+    end
+    sigma(x)
+end
+
+
+
+
+#=
 # 784 * 250
 W1 = param(randn(Q,D)./sqrt(D))
 w1 = param(randn(Q,1)./sqrt(D))
@@ -56,12 +92,12 @@ vU1=zeros(size(U1))
 vu1=zeros(size(u1))
 vU2=zeros(size(U2))
 vu2=zeros(size(u2))
+=#
 
 # using CuArrays for GPU support
 # w, b, x, y = cu.((w, b, x, y))
 
-encode(x)= sigma(W2*sigma(W1*x .+ w1).+w2)
-decode(h)= sigma(U2*sigma(U1*h .+ u1).+u2)
+
 
 #loss(x) = sqrt(0.1+sum((x - decode(encode(x))).^2))/(N*D)
 #loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
@@ -87,7 +123,7 @@ function momentum!(ps, vs, mu=0.9, eta = 5.5)
     end
 end
 
-for i = 1:20000
+for i = 1:20
     #update!((W1, w1, U1, u1))
     momentum!((W1, w1, U1, u1,W2, w2, U2, u2),(vW1,vw1,vU1,vu1,vW2,vw2,vU2,vu2))
     @show loss(xtrain)
