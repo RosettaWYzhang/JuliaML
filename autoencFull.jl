@@ -9,67 +9,80 @@
 # will ask a related question, read about probability
 # trick: log error function and sigmoid, a standard trick implemented in package
 
-
-
 using PyPlot
 using MNIST
 using Flux.Tracker
-trainX, trainY = traindata()
+(trainX, trainY) = traindata()
 
+# intialise parameters
+N = 50 # number of training points
+D = 784 # dimension of each x vector
+numUnits = [784,500,250,100,30]
+numLayers = 8
+xtrain = trainX[:,1:N]./255
+
+
+# utility functions
 function sigma(x)
     return 1./(1.0+exp.(-x))
 end
 
-function relu(x)
-    return max(0,x)
-end
-
 function leakyReLU(x,alpha=0.1)
-    return max(alpha,x)
+    return max.(alpha,x)
 end
 
-
-N = 50 # number of training points
-D = 784 # dimension of each x vector
-numUnits = [784,500,250,100,30,100,250,500,784]
-numLayers = 8
-xtrain=trainX[:,1:N]./255
-
-# randomly initiate weight and bias
-for i = 1:numLayers
-    weights[i] = param(randn(numsUnits[i], numsUnits[i+1])./sqrt(numsUnits[i+1]))
-    bias[i] = param(randn(numUnits[i], 1))./sqrt(numsUnits[i+1])
-    vW[i] = zeros(size(weights[i]))
-    vb[i] = zeros(size(bias[i]))
+# define structure of linear layer
+mutable struct Affine
+  W
+  b
+  vW
+  vb
 end
 
-chain(x, i) = leakyReLU(weights[i]*x .+ bias[i])
+Affine(in::Integer, out::Integer) =
+  Affine(param(randn(out, in)), param(randn(out)), zeros(randn(out, in)), zeros(randn(out)))
 
-function model(x)
-    for i = 1:numberLayers-1
-        x = chain(x,i)
+# Overload call, so the object can be used as a function
+(m::Affine)(x) = m.W * x .+ m.b
+
+# autoencoder structure
+en_l1 = Affine(numUnits[1],numUnits[2])
+en_l2 = Affine(numUnits[2],numUnits[3])
+en_l3 = Affine(numUnits[3],numUnits[4])
+en_l4 = Affine(numUnits[4],numUnits[5])
+de_l1 = Affine(numUnits[5],numUnits[4])
+de_l2 = Affine(numUnits[4],numUnits[3])
+de_l3 = Affine(numUnits[3],numUnits[2])
+de_l4 = Affine(numUnits[2],numUnits[1])
+
+layers = [en_l1, en_l2, en_l3, en_l4, de_l1, de_l2, de_l3, de_l4]
+
+function clearGradient(layers)
+    for i = 1 : numLayers
+        layers[i].W.grad .= 0
+        layers[i].b.grad .= 0
     end
-    return sigma(x*weights[numLayers] .+ bias[numLayers])
 end
 
-loss(x) = begin; y=model(x); return -sum( x.*log(y)+(1-x).*log(1-y))/(N*D); end
+encode(x) = leakyReLU(en_l4(leakyReLU(en_l3(leakyReLU(en_l2(leakyReLU(en_l1(x))))))))
+decode(x) = sigma(de_l4(leakyReLU(de_l3(leakyReLU(de_l2(leakyReLU(de_l1(x))))))))
+model(x) = decode(encode(x))
+loss(x) = begin; y=model(x); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
 
 # update with momentum
-function momentum!(weights,bias,vWeights,vbias, mu=0.9, eta = 5.5)
-    back!(loss(xtrain))
-    for count=1:length(ps)
-        copy!(vWeights[count],  mu*vWeights[count] + (1-mu)*weights[count].grad)
-        copy!(vBias[count],  mu*vBias[count] + (1-mu)*bias[count].grad)
-        copy!(weights[count].data, weights[count].data -eta*vWeights[count])
-        copy!(bias[count].data, bias[count].data -eta*vBias[count])
+function update!(layers,mu=0.9, eta = 5.5)
+    for i = 1:numLayers
+        layers[i].vW = mu * layers[i].vW + (1-mu) * layers[i].W.grad
+        layers[i].vb = mu * layers[i].vb + (1-mu) * layers[i].b.grad
+        layers[i].W.data = layers[i].W.data - eta * layers[i].vW
+        layers[i].b.data = layers[i].b.data - eta * layers[i].vb
     end
-    for pars in ps,bias,vWeights
-        pars.grad .= 0 # clear the gradient
-    end
+    clearGradient(layers)
 end
 
 for i = 1:20
-    momentum!(weights,bias,vweights,vbias)
+    back!(loss(xtrain))
+    update!(layers)
     @show loss(xtrain)
 end
 
