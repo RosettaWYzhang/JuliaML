@@ -5,7 +5,7 @@
 # see how squared error compared with -log
 
 # understand prove integration of gaussian probability density
-# prove integration of p(x) x dx = mu
+# prove integration of p(x) x dx = mu, isn't this the definition?
 # will ask a related question, read about probability
 # trick: log error function and sigmoid, a standard trick implemented in package
 
@@ -24,12 +24,14 @@ function leakyReLU(x, alpha=0.1)
     return max.(alpha,x)
 end
 
-N = 50 # number of training points
+N = 60000 # number of training points
 D = 784 # dimension of each x vector
 H1 = 500
 H2 = 250
 H3 = 100
 H4 = 30
+batchNum = 10000
+batchSize = div(N,batchNum)
 
 xtrain=trainX[:,1:N]./255
 
@@ -86,24 +88,36 @@ decode(h)= sigma(U4*leakyReLU(U3*leakyReLU(U2*leakyReLU(U1*h .+ u1).+u2).+u3).+u
 
 #loss(x) = sqrt(0.1+sum((x - decode(encode(x))).^2))/(N*D)
 #loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
-loss(x) = begin; y=decode(encode(x)); return -sum( x.*log(y)+(1-x).*log(1-y))/(N*D); end
+loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
+
+# compute minibatch loss
+function E(bn)
+  x_batch = xtrain[:,(bn-1)*batchSize+1: bn*batchSize]
+  loss(x_batch)
+end
 
 # momentum
 function momentum!(ps, vs, mu=0.9, eta = 5.5)
-    back!(loss(xtrain))
-    for count=1:length(ps)
-        copy!(vs[count],  mu*vs[count] + (1-mu)*ps[count].grad)
-        copy!(ps[count].data, ps[count].data -eta*vs[count])
-    end
-    for pars in ps
-        pars.grad .= 0 # clear the gradient
+    for bn = 1 : batchNum
+        back!(E(bn))
+        @show E(bn)
+        for count=1:length(ps)
+            copy!(vs[count],  mu*vs[count] + (1-mu)*ps[count].grad)
+            copy!(ps[count].data, ps[count].data -eta*vs[count])
+        end
+        for pars in ps
+            pars.grad .= 0 # clear the gradient
+        end
     end
 end
 
-for i = 1:2000
-    momentum!((W1, w1, U1, u1, W2, w2, U2, u2, W3, w3, U3, u3, W4, w4, U4, u4),(vW1,vw1,vU1,vu1,vW2,vw2,vU2,vu2,vW3,vw3,vU3,vu3,vW4,vw4,vU4,vu4))
-    @show loss(xtrain)
+function update!()
+    for i = 1:2000
+        momentum!((W1, w1, U1, u1, W2, w2, U2, u2, W3, w3, U3, u3, W4, w4, U4, u4),(vW1,vw1,vU1,vu1,vW2,vw2,vU2,vu2,vW3,vw3,vU3,vu3,vW4,vw4,vU4,vu4))
+        #@show loss(xtrain)
+    end
 end
 
+update!()
 xrecon=decode(encode(xtrain)).data
 pcolormesh(reshape(xrecon[:,1],28,28),cmap="gray")
