@@ -31,7 +31,7 @@ H2 = 250
 H3 = 100
 H4 = 30
 batchSize = 10000
-batchNum = div(N,batchNum)
+batchNum = div(N,batchSize)
 
 xtrain=trainX[:,1:N]./255
 
