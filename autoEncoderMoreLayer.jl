@@ -112,7 +112,7 @@ function momentum!(ps, vs, mu=0.9, eta = 5.5)
 end
 
 function update!()
-    for i = 1:2000
+    for i = 1:20
         momentum!((W1, w1, U1, u1, W2, w2, U2, u2, W3, w3, U3, u3, W4, w4, U4, u4),(vW1,vw1,vU1,vu1,vW2,vw2,vU2,vu2,vW3,vw3,vU3,vu3,vW4,vw4,vU4,vu4))
         #@show loss(xtrain)
     end
