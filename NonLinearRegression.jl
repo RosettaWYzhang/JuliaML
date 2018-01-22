@@ -6,6 +6,7 @@ N=10 # number of training points
 D=3 # dimension of each x vector
 # assume we try to predict a scalar output
 
+sigma(x) = 1./(1.0+exp.(-x))
 # let's make a fake dataset:
 x=randn(D,N)
 w_david=randn(D,1)

@@ -24,17 +24,17 @@ function leakyReLU(x, alpha=0.1)
     return max.(alpha,x)
 end
 
-N =60000 # number of training points
+N = 50 # number of training points
 D = 784 # dimension of each x vector
 H1 = 500
 H2 = 250
 H3 = 100
 H4 = 30
-batchSize = 1000
-batchNum = div(N,batchSize)
-iteration = 500
-learning_rate = 10
-k = 0.01
+#batchSize = 10
+#batchNum = div(N,batchSize)
+iteration = 2000
+learning_rate = 5
+#k = 0.1
 
 xtrain=trainX[:,1:N]./255
 
@@ -94,18 +94,18 @@ decode(h)= sigma(U4*leakyReLU(U3*leakyReLU(U2*leakyReLU(U1*h .+ u1).+u2).+u3).+u
 loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
 
 # compute minibatch loss
-function E(bn)
+#=function E(bn)
   x_batch = xtrain[:,(bn-1)*batchSize+1: bn*batchSize]
   loss(x_batch)
-end
+end=#
 
 # momentum
 function momentum!(ps, vs, i, mu=0.9)
-   eta = learning_rate/(1+k*i)
-   #eta = learning_rate 
-   for bn = 1 : batchNum
-        back!(E(bn))
-        @show E(bn)
+    #eta = learning_rate/(1+k*i)
+    eta = learning_rate
+    #for bn = 1 : batchNum
+        back!(loss(xtrain))
+        @show loss(xtrain)
         for count=1:length(ps)
             copy!(vs[count],  mu*vs[count] + (1-mu)*ps[count].grad)
             copy!(ps[count].data, ps[count].data -eta*vs[count])
@@ -113,7 +113,7 @@ function momentum!(ps, vs, i, mu=0.9)
         for pars in ps
             pars.grad .= 0 # clear the gradient
         end
-    end
+    #end
 end
 
 function update!()

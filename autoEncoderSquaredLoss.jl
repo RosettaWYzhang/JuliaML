@@ -24,7 +24,7 @@ function leakyReLU(x, alpha=0.1)
     return max.(alpha,x)
 end
 
-N =60000 # number of training points
+N = 60000 # number of training points
 D = 784 # dimension of each x vector
 H1 = 500
 H2 = 250
@@ -32,9 +32,9 @@ H3 = 100
 H4 = 30
 batchSize = 1000
 batchNum = div(N,batchSize)
-iteration = 500
+iteration = 30
 learning_rate = 10
-k = 0.01
+k = 0.5
 
 xtrain=trainX[:,1:N]./255
 
@@ -90,8 +90,8 @@ encode(x)= leakyReLU(W4*leakyReLU(W3*leakyReLU(W2*leakyReLU(W1*x .+ w1).+w2).+w3
 decode(h)= sigma(U4*leakyReLU(U3*leakyReLU(U2*leakyReLU(U1*h .+ u1).+u2).+u3).+u4)
 
 #loss(x) = sqrt(0.1+sum((x - decode(encode(x))).^2))/(N*D)
-#loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
-loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
+loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
+#loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
 
 # compute minibatch loss
 function E(bn)
@@ -101,9 +101,8 @@ end
 
 # momentum
 function momentum!(ps, vs, i, mu=0.9)
-   eta = learning_rate/(1+k*i)
-   #eta = learning_rate 
-   for bn = 1 : batchNum
+    eta = learning_rate/(1+k*i)
+    for bn = 1 : batchNum
         back!(E(bn))
         @show E(bn)
         for count=1:length(ps)
