@@ -1,15 +1,7 @@
-# V last layer: sigmoid
-# V all previous layer: leaky Relu
-# minibatch, whole dataset
 # V Structure 784 - 500 - 250 - 100 - 30 - 100 - 250 - 500 - 784
+# last layer: sigmoid, all previous layer leaky relu
+# use minibatch and whole dataset
 # see how squared error compared with -log
-
-# understand prove integration of gaussian probability density
-# prove integration of p(x) x dx = mu, isn't this the definition?
-# will ask a related question, read about probability
-# trick: log error function and sigmoid, a standard trick implemented in package
-
-# Structure 784 - 250 - 20 - 250 - 784
 
 using PyPlot
 using MNIST
@@ -34,7 +26,7 @@ batchSize = 1000
 batchNum = div(N,batchSize)
 iteration = 500
 learning_rate = 10
-k = 0.01
+k = 0.01  #for learning_rate annealing
 
 xtrain=trainX[:,1:N]./255
 
@@ -83,14 +75,13 @@ vu3=zeros(size(u3))
 vU4=zeros(size(U4))
 vu4=zeros(size(u4))
 
-# using CuArrays for GPU support
-# w, b, x, y = cu.((w, b, x, y))
-
 encode(x)= leakyReLU(W4*leakyReLU(W3*leakyReLU(W2*leakyReLU(W1*x .+ w1).+w2).+w3).+w4)
 decode(h)= sigma(U4*leakyReLU(U3*leakyReLU(U2*leakyReLU(U1*h .+ u1).+u2).+u3).+u4)
 
-#loss(x) = sqrt(0.1+sum((x - decode(encode(x))).^2))/(N*D)
+
+#squared loss
 #loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
+
 loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
 
 # compute minibatch loss
@@ -102,7 +93,6 @@ end
 # momentum
 function momentum!(ps, vs, i, mu=0.9)
    eta = learning_rate/(1+k*i)
-   #eta = learning_rate 
    for bn = 1 : batchNum
         back!(E(bn))
         @show E(bn)
@@ -119,7 +109,6 @@ end
 function update!()
     for i = 1:iteration
         momentum!((W1, w1, U1, u1, W2, w2, U2, u2, W3, w3, U3, u3, W4, w4, U4, u4),(vW1,vw1,vU1,vu1,vW2,vw2,vU2,vu2,vW3,vw3,vU3,vu3,vW4,vw4,vU4,vu4),i)
-        #@show loss(xtrain)
     end
 end
 
