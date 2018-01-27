@@ -2,7 +2,14 @@
 # last layer: sigmoid, all previous layer leaky relu
 # use minibatch and whole dataset
 # see how squared error compared with -log
+# problem with this code: digit is not clear; loss decreases very slowly
 
+# 3
+# 1.4
+# bad:14
+# JLD
+# put layer 1000
+# try Mike's code
 using PyPlot
 using MNIST
 using Flux.Tracker
@@ -22,9 +29,9 @@ H1 = 500
 H2 = 250
 H3 = 100
 H4 = 30
-batchSize = 1000
+batchSize = 100
 batchNum = div(N,batchSize)
-iteration = 500
+iteration = 2
 learning_rate = 10
 k = 0.01  #for learning_rate annealing
 
@@ -80,7 +87,8 @@ decode(h)= sigma(U4*leakyReLU(U3*leakyReLU(U2*leakyReLU(U1*h .+ u1).+u2).+u3).+u
 
 
 #squared loss
-#loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
+#square_loss(x) = sum((x - decode(encode(x))).^2)/(N*D)
+square_loss_test(x) = sum(sum((x - decode(encode(x)).data).^2))/N
 
 loss(x) = begin; y=decode(encode(x)); return -sum( x.*log.(y)+(1-x).*log.(1-y))/(N*D); end
 
@@ -95,7 +103,7 @@ function momentum!(ps, vs, i, mu=0.9)
    eta = learning_rate/(1+k*i)
    for bn = 1 : batchNum
         back!(E(bn))
-        @show E(bn)
+        @show square_loss_test(xtrain)
         for count=1:length(ps)
             copy!(vs[count],  mu*vs[count] + (1-mu)*ps[count].grad)
             copy!(ps[count].data, ps[count].data -eta*vs[count])
