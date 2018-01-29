@@ -24,15 +24,15 @@ m = Chain(
   Dense(1000, 784, σ))
 
 opt = Momentum(params(m)) # default η = 0.01; ρ = 0.9, decay = 0
-squared_loss_test(x) = (sum(sum((x - m(x).data).^2))/batchSize)
+squared_loss_test(x) = (sum(sum((x - m(x).data).^2))/N)
 log_loss(x) = begin; y=m(x); return -sum( x.*log.(y)+(1-x).*log.(1-y))/N; end
 
 for i = 1:10
   info("Epoch $i")
-  for bn = 1:batchNum
-    info("batch $bn")
-    x_batch = xtrain[:,(bn-1)*batchSize+1: bn*batchSize]
-    Flux.train!(log_loss, x_batch, opt, cb = () -> @show squared_loss_test(x_batch))
-    info("finish batch $bn")
-  end
+  #for bn = 1:batchNum
+    #info("batch $bn")
+    #x_batch = xtrain[:,(bn-1)*batchSize+1: bn*batchSize]
+  Flux.train!(log_loss, xtrain, opt, cb = () -> @show squared_loss_test(xtrain))
+    #info("finish batch $bn")
+  #end
 end
