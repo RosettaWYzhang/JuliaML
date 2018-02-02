@@ -14,7 +14,7 @@ N = 60000 # Size of the encoding
 batchSize = 200
 # Partition into batches
 data = [(float(hcat(vec.(imgs[i])...)),) for i in partition(1:60_000, batchSize)]
-
+data = cu(data[:][1])
 # define autoencoder structure: 784-1000-500-250-30
 m = Chain(
   # Encoder
@@ -30,9 +30,9 @@ m = Chain(
   )
 m = mapleaves(cu, m)
 
-ds(x)=1./(1+exp.(-x))
+sigma(x)=1./(1+exp.(-x))
 loss(x) = mse(m(x), x)
-squared_loss_test(x) = sum(sum((x - ds(m(x))).^2))/batchSize
+squared_loss_test(x) = sum(sum((x - sigma(m(x))).^2))/batchSize
 log_loss(x) = begin; y=m(x); return -sum( x.*log.(y)+(1-x).*log.(1-y))/batchSize; end
 #wloss(x) = begin; h=m(x); return mean(h.*(1-x)+log.(1+exp.(-h))); end
 wyloss(x) = begin; h=m(x); return mean(-x.*h + log1pexp(h)); end
