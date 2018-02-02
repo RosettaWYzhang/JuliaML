@@ -27,3 +27,6 @@ Flux.train!(loss, dataset, opt, cb = throttle(evalcb, 5))
 
 # Check the prediction for the first digit
 argmax(m(x[:,1]), 0:9) == argmax(y[:,1], 0:9)
+
+xrecon=m(x).data
+pcolormesh(reshape(xrecon[:,1],28,28),cmap="gray")

@@ -5,7 +5,6 @@ using Juno: @progress
 
 # Encode MNIST images as compressed vectors that can later be decoded back into
 # images.
-
 imgs = MNIST.images()
 
 # Partition into batches of size 1000
@@ -19,7 +18,7 @@ m = Chain(
 
 loss(x) = mse(m(x), x)
 
-evalcb = throttle(() -> @show loss(data[1][1]), 5)
+evalcb = () -> @show loss(data[1][1])
 opt = ADAM(params(m))
 
 @progress for i = 1:10
