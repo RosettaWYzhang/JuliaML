@@ -36,7 +36,7 @@ squared_loss_test(x) = sum(sum((x - sigma(m(x))).^2))/batchSize
 log_loss(x) = begin; y=m(x); return -sum( x.*log.(y)+(1-x).*log.(1-y))/batchSize; end
 # combine sigma function with log loss
 wyloss(x) = begin; h=m(x); return mean(-x.*h + log1pexp.(h)); end
-cuLoss(x) = begin; h=m(x); return mean(-x.*h + CUDAnative.log.(1+exp.(h))); end
+cuLoss(x) = begin; h=m(x); return mean(-x.*h + CUDAnative.log.(1+exp.(h).data)); end
 
 
 evalcb = () -> @show squared_loss_test(data[1][1])
