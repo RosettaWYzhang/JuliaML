@@ -1,8 +1,5 @@
 # Julia simple neural net for Boston Housing Problem
-# f(x) = c'h(x)
-# h(x) = σ(Ax + b)
 using Flux, Flux.Tracker
-
 
 isfile("housing.data") ||
   download("https://raw.githubusercontent.com/MikeInnes/notebooks/master/housing.data",
